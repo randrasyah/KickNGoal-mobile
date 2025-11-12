@@ -105,3 +105,165 @@
         - When to use: Digunakan ketika kita mengubah sesuatu yang hot reload tidak bisa tangani, seperti mengubah state global, mengubah main(), atau mengubah initState() pada StatefulWidget (karena initState() tidak dijalankan ulang oleh hot reload).
 
     Perbedaan Utamanya adalah State (Data). Hot Reload menjaga state (aplikasi tidak di-reset) sedangkan Hot Restart menghancurkan state (aplikasi di-reset ke awal).
+
+---
+
+## Tugas 8
+
+**1. Jelaskan perbedaan antara Navigator.push() dan Navigator.pushReplacement() pada Flutter. Dalam kasus apa sebaiknya masing-masing digunakan pada aplikasi Football Shop kamu?**
+
+**Navigator.push():** Menambahkan halaman baru ke atas stack navigasi tanpa menghapus halaman sebelumnya. User dapat kembali ke halaman sebelumnya menggunakan tombol back.
+
+**Navigator.pushReplacement():** Mengganti halaman saat ini dengan halaman baru. Halaman sebelumnya dihapus dari stack, sehingga user tidak bisa kembali ke halaman tersebut dengan tombol back.
+
+**Penggunaan dalam Football Shop:**
+- **Navigator.push()**: Digunakan ketika navigasi dari homepage ke form "Add Product" melalui button card. User bisa kembali ke homepage dengan tombol back setelah selesai mengisi form.
+  ```dart
+  // product_card.dart
+  if (item.name == "Add Product") {
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => const ProductFormPage(),
+          ),
+      );
+  }
+  ```
+
+- **Navigator.pushReplacement()**: Digunakan dalam drawer navigation untuk pindah antar halaman utama (Home dan Add Product) untuk mencegah penumpukan halaman yang tidak perlu dalam stack.
+  ```dart
+  // left_drawer.dart
+  Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MyHomePage(),
+      )
+  );
+  ```
+
+**2. Bagaimana kamu memanfaatkan hierarchy widget seperti Scaffold, AppBar, dan Drawer untuk membangun struktur halaman yang konsisten di seluruh aplikasi?**
+
+Saya menggunakan hierarki widget untuk menciptakan struktur yang konsisten:
+
+**Scaffold sebagai Foundation:** Setiap halaman menggunakan Scaffold sebagai struktur dasar yang menyediakan kerangka standar Material Design dengan AppBar dan body.
+
+**AppBar yang Konsisten:** 
+```dart
+AppBar(
+    title: const Text(
+        'KickNGoal',
+        style: TextStyle(
+            color: Colors.black,
+            fontWeight: FontWeight.bold,
+        ),
+    ),
+    backgroundColor: Theme.of(context).colorScheme.primary,
+    iconTheme: const IconThemeData(color: Colors.black),
+),
+```
+
+**Drawer Navigation:** Menggunakan LeftDrawer yang sama di semua halaman utama untuk navigasi konsisten:
+```dart
+drawer: const LeftDrawer(),
+```
+
+**Manfaat Hierarki Widget:**
+- **Konsistensi Visual:** Semua halaman memiliki AppBar dengan style yang sama
+- **Navigasi Unified:** Drawer tersedia di setiap halaman untuk akses cepat
+- **Struktur Predictable:** User tau di mana menemukan elemen navigasi
+- **Maintenance Mudah:** Perubahan pada LeftDrawer atau theme akan teraplikasi ke seluruh app
+
+**3. Dalam konteks desain antarmuka, apa kelebihan menggunakan layout widget seperti Padding, SingleChildScrollView, dan ListView saat menampilkan elemen-elemen form? Berikan contoh penggunaannya dari aplikasi kamu.**
+
+**Padding:** Memberikan ruang putih yang konsisten dan meningkatkan readability.
+```dart
+// product_form.dart
+Padding(
+  padding: const EdgeInsets.all(8.0),
+  child: TextFormField(
+    decoration: InputDecoration(
+      hintText: "Product Name",
+      labelText: "Product Name",
+      // ...
+    ),
+  ),
+),
+```
+*Kelebihan:* Mencegah elemen form menempel ke edge layar, memberikan breathing space yang membuat form lebih comfortable untuk digunakan.
+
+**SingleChildScrollView:** Memungkinkan form untuk di-scroll ketika konten melebihi tinggi layar.
+```dart
+// product_form.dart dan menu.dart
+body: SingleChildScrollView(
+    child: Column(
+        children: [
+            ...
+        ],
+    ),
+),
+```
+*Kelebihan:* Mencegah overflow error, memastikan semua form fields dapat diakses pada berbagai ukuran layar, dan memberikan UX yang smooth saat mengisi form panjang.
+
+**ListView (dalam konteks Drawer):** Menyediakan scrollable list untuk navigation items.
+```dart
+// left_drawer.dart
+Drawer(
+  child: ListView(
+    children: [
+      DrawerHeader(...),
+      ListTile(...),
+      ListTile(...),
+    ],
+  ),
+)
+```
+*Kelebihan:* Mengatur navigation items secara vertikal, automatically scrollable jika items terlalu banyak, dan memberikan tap interaction yang responsif.
+
+**4. Bagaimana kamu menyesuaikan warna tema agar aplikasi Football Shop memiliki identitas visual yang konsisten dengan brand toko?**
+
+Saya menggunakan pendekatan systematic color theming untuk menciptakan identitas visual yang konsisten:
+
+**Global Theme Configuration:**
+```dart
+// main.dart
+theme: ThemeData(
+  colorScheme: ColorScheme.fromSwatch().copyWith(
+    primary: const Color(0xFFDCEDC8), // pastel green for navbar
+    secondary: const Color(0xFFF9F9F9), // pastel yellow for secondary
+  ),
+),
+```
+
+**Konsistensi Warna Button:**
+```dart
+// menu.dart - yellow color scheme
+final List<ItemHomepage> items = [
+    ItemHomepage("All Products", Icons.shopping_bag, const Color(0xFFFFF59D)), // light yellow
+    ItemHomepage("Add Product", Icons.add, const Color(0xFFFFF176)), // medium yellow  
+    ItemHomepage("Logout", Icons.logout, const Color(0xFFFFEE58)), // darker yellow
+];
+```
+
+**Konsistensi di Semua Komponen:**
+```dart
+// AppBar selalu menggunakan theme primary
+backgroundColor: Theme.of(context).colorScheme.primary,
+
+// drawer header matching dengan AppBar
+decoration: const BoxDecoration(
+  color: Color(0xFFDCEDC8), 
+),
+```
+
+**Implementasi Konsisten di Seluruh Aplikasi:**
+- **AppBar:** Menggunakan `Theme.of(context).colorScheme.primary` untuk konsistensi
+- **Drawer Header:** Matching dengan AppBar menggunakan warna yang sama
+- **Button Cards:** Gradasi yellow
+- **Text Colors:** Black untuk contrast yang baik
+
+**Filosofi Warna yang Dipilih:**
+- **Green (Navbar):** Warna identik sepak bola dan kebugaran
+- **Yellow (Buttons):** Complimentary color untuk hijau
+- **Black Text:** Memberikan readability yang baik
+
+Pendekatan ini memastikan bahwa setiap elemen visual mendukung identitas KickNGoal.
